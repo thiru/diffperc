@@ -4,6 +4,7 @@
 ;;
 (ns diffperc.core
   (:require [diffperc.app :refer :all]
+            [diffperc.utils :refer :all]
             [clojure.java.io :as io]
             [clojure.string :as string]))
 
@@ -22,10 +23,10 @@
         test-file (io/as-file test-file-path)]
     (cond
       (not (.exists base-file))
-      (println (str "Base file '" base-file-path "' not found"))
+      (r :error (str "Base file '" base-file-path "' not found"))
 
       (not (.exists test-file))
-      (println (str "Test file '" test-file-path "' not found"))
+      (r :error (str "Test file '" test-file-path "' not found"))
 
       :else
-      (println base-file test-file))))
+      (r :success (str base-file ", " test-file)))))

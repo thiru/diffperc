@@ -2872,7 +2872,7 @@ net.brehaut.ClojureTools = (function (SH) {
 
 <p>This namespace does not contain any domain-specific code.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns diffperc.utils
- (:require [clojure.string :as string]))</pre></td></tr><tr><td class="docs"><h2>Functions</h2>
+ (:require [clojure.string :as string]))</pre></td></tr><tr><td class="docs"><h2>String Utils</h2>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Print the given number in English words.</p>
 
 <p>  E.g. <code>(as-english-number 23) ;=&gt; "Twenty-three"</code>.</p>
@@ -2883,7 +2883,49 @@ net.brehaut.ClojureTools = (function (SH) {
 <p>  E.g. <code>(trim-version "0.1.0") ;=&gt; "0.1"</code>.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn trim-version
   [version]
-  (string/replace version #&quot;(\.0+)+$&quot; &quot;&quot;))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#diffperc.main" name="diffperc.main"><h1 class="project-name">diffperc.main</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Summary</h2>
+  (string/replace version #&quot;(\.0+)+$&quot; &quot;&quot;))</pre></td></tr><tr><td class="docs"><h2>Result Utils</h2>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>A generic map of levels that can be used for logging, reporting, etc.</p>
+
+<p>  Negative values represent some level of failure. Non-negative values indicate
+  some level of success, or just plain reporting.</p>
+</td><td class="codes"><pre class="brush: clojure">(def levels
+  {:success 2
+   :info 1
+   :debug 0
+   :warning -1
+   :error -2
+   :fatal -3})</pre></td></tr><tr><td class="docs"><p>A map representing the result of some operation, including the level of
+  success/failure, and an optional data item.</p>
+
+<p>  TODO: more docs</p>
+</td><td class="codes"><pre class="brush: clojure">(defn r
+  ([] (r :info))
+  ([level] (r level &quot;&quot;))
+  ([level msg] {:level level :message msg})
+  ([level msg data] {:level level :message msg :data data}))</pre></td></tr><tr><td class="docs"><p>Determine whether the given object represents a successful outcome.</p>
+
+<p>  TODO: more docs</p>
+</td><td class="codes"><pre class="brush: clojure">(defn success?
+  [obj]
+  (cond
+    (nil? obj)
+    false
+    (false? obj)
+    false
+    (map? obj)
+    (let [level (:level obj)]
+      (cond
+        (number? level)
+        (&lt;= 0 level)
+        (keyword? level)
+        (&lt;= 0 (get levels level (:error levels)))))
+    :else
+    true))</pre></td></tr><tr><td class="docs"><p>Determine whether the given object represents a failure outcome.</p>
+
+<p>  TODO: more docs</p>
+</td><td class="codes"><pre class="brush: clojure">(defn failed?
+  [obj]
+  (not (success? obj)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#diffperc.main" name="diffperc.main"><h1 class="project-name">diffperc.main</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Summary</h2>
 
 <p>CLI and entry-point into the application.</p>
 
@@ -2939,7 +2981,7 @@ summary string returned</li>
 <ul>
 <li><code>:ok?</code>
 <ul><li>Whether the validation was successful or not</li></ul></li>
-<li><code>:exit-message</code>
+<li><code>:message</code>
 <ul><li>A message to be printed on exiting the app</li>
 <li>This could contain error messages and/or the usage summary</li></ul></li>
 <li><code>:files</code>
@@ -2952,25 +2994,25 @@ summary string returned</li>
     (cond
       ;; Help option was specified
       (:help options)
-      {:exit-message (usage summary) :ok? true}
+      {:message (usage summary) :ok? true}
       ;; Version option was specified
       (:version options)
-      {:exit-message (trim-version (:version app-info)) :ok? true}
+      {:message (trim-version (:version app-info)) :ok? true}
       ;; Errors were found while parsing
       errors
-      {:exit-message (error-msg errors)}
+      {:message (error-msg errors)}
       ;; No files given
       (zero? (count arguments))
-      {:exit-message (usage summary)}
+      {:message (usage summary)}
       ;; Need exactly two files
       (not= 2 (count arguments))
-      {:exit-message &quot;Exactly two files are expected&quot;}
+      {:message &quot;Exactly two files are expected&quot;}
       ;; All is good. Run program!
       (= 2 (count arguments))
       {:files arguments :options options :ok? true}
       ;; Failed custom validation. Exit with usage summary.
       :else
-      {:exit-message (usage summary)})))</pre></td></tr><tr><td class="docs"><p>Exit app with code <code>status</code> and print <code>msg</code> to standard out.</p>
+      {:message (usage summary)})))</pre></td></tr><tr><td class="docs"><p>Exit app with code <code>status</code> and print <code>msg</code> to standard out.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn exit
   [status msg]
   (println msg)
@@ -2982,18 +3024,40 @@ summary string returned</li>
 </ul>
 </td><td class="codes"><pre class="brush: clojure">(defn -main
   [&amp; args]
-  (let [{:keys [files options exit-message ok?]} (validate-args args)]
-    (if exit-message
-      (exit (if ok? 0 1) exit-message)
-      (calc-diffperc files))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#diffperc.core" name="diffperc.core"><h1 class="project-name">diffperc.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Summary</h2>
+  (let [{:keys [files options message ok?]} (validate-args args)]
+    (if message
+      (exit (if ok? 0 1) message)
+      (let [res (calc-diffperc (first files) (second files))]
+        (exit (if (success? res) 0 2)
+              (:message res))))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#diffperc.core" name="diffperc.core"><h1 class="project-name">diffperc.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Summary</h2>
 
 <p>Core domain logic.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns diffperc.core
   (:require [diffperc.app :refer :all]
-            [clojure.string :as string]))</pre></td></tr><tr><td class="docs"><p>TODO</p>
+            [diffperc.utils :refer :all]
+            [clojure.java.io :as io]
+            [clojure.string :as string]))</pre></td></tr><tr><td class="docs"><p>Calculate the percentage difference of words between two files.</p>
+
+<p>  Punctuation, white-space, and letter casing is ignored.</p>
+
+<ul>
+<li><code>base-file-path</code>
+<ul><li>The file considered to be the base/standard against which the test is
+performed</li></ul></li>
+<li><code>test-file-path</code>
+<ul><li>The file being tested</li></ul></li>
+</ul>
 </td><td class="codes"><pre class="brush: clojure">(defn calc-diffperc
-  [files]
-  (println &quot;TODO: calculate&quot;))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#diffperc.app" name="diffperc.app"><h1 class="project-name">diffperc.app</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Summary</h2>
+  [base-file-path test-file-path]
+  (let [base-file (io/as-file base-file-path)
+        test-file (io/as-file test-file-path)]
+    (cond
+      (not (.exists base-file))
+      (r :error (str &quot;Base file '&quot; base-file-path &quot;' not found&quot;))
+      (not (.exists test-file))
+      (r :error (str &quot;Test file '&quot; test-file-path &quot;' not found&quot;))
+      :else
+      (r :success (str base-file &quot;, &quot; test-file)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#diffperc.app" name="diffperc.app"><h1 class="project-name">diffperc.app</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Summary</h2>
 
 <p>High-level properties of the project, used in places like the CLI, web
 server defaults, build definition, etc.</p>

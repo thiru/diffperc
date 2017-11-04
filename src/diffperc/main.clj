@@ -62,7 +62,7 @@
 
   * `:ok?`
     * Whether the validation was successful or not
-  * `:exit-message`
+  * `:message`
     * A message to be printed on exiting the app
     * This could contain error messages and/or the usage summary
   * `:files`
@@ -73,23 +73,23 @@
     (cond
       ;; Help option was specified
       (:help options)
-      {:exit-message (usage summary) :ok? true}
+      {:message (usage summary) :ok? true}
 
       ;; Version option was specified
       (:version options)
-      {:exit-message (trim-version (:version app-info)) :ok? true}
+      {:message (trim-version (:version app-info)) :ok? true}
 
       ;; Errors were found while parsing
       errors
-      {:exit-message (error-msg errors)}
+      {:message (error-msg errors)}
 
       ;; No files given
       (zero? (count arguments))
-      {:exit-message (usage summary)}
+      {:message (usage summary)}
 
       ;; Need exactly two files
       (not= 2 (count arguments))
-      {:exit-message "Exactly two files are expected"}
+      {:message "Exactly two files are expected"}
 
       ;; All is good. Run program!
       (= 2 (count arguments))
@@ -97,7 +97,7 @@
 
       ;; Failed custom validation. Exit with usage summary.
       :else
-      {:exit-message (usage summary)})))
+      {:message (usage summary)})))
 
 (defn exit
   "Exit app with code `status` and print `msg` to standard out."
@@ -111,7 +111,10 @@
   * `args`
     * A vector of command-line arguments"
   [& args]
-  (let [{:keys [files options exit-message ok?]} (validate-args args)]
-    (if exit-message
-      (exit (if ok? 0 1) exit-message)
-      (calc-diffperc (first arguments) (second arguments)))))
+  (let [{:keys [files options message ok?]} (validate-args args)]
+    (if message
+      (exit (if ok? 0 1) message)
+      (let [res (calc-diffperc (first files) (second files))]
+        (exit (if (success? res) 0 2)
+              (:message res))))))
+      
