@@ -17,4 +17,4 @@
 
 (def app-config
   "App configuration and defaults."
-   {:log-level-default 0})
+   {:log-level 0})

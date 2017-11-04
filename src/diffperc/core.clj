@@ -8,6 +8,38 @@
             [clojure.java.io :as io]
             [clojure.string :as string]))
 
+(defn strip-subtitle-markup
+  "TODO: docs"
+  [text]
+  (->
+    ;; Remove speaker marker (e.g. "M:")
+    (string/replace text #"(^|\n\s*)[\w\d]+:\s+" "")
+    ;; Remove enviromental queues (e.g. "[laughter]")
+    (string/replace #"\[.+\]" "")))
+
+(defn strip-punctuation
+  "TODO: docs"
+  [text]
+  (string/replace text #"[^\w\d\s]" ""))
+
+(defn one-word-per-line
+  "TODO: docs"
+  [text]
+  (->
+    (string/replace text #"\s" "\n")
+    ;; Collapse multiple new lines
+    (string/replace #"\n\n+" "\n")))
+
+(defn make-compare-friendly
+  "TODO: docs"
+  [text]
+  (->
+    (strip-subtitle-markup text)
+    strip-punctuation
+    one-word-per-line
+    string/trim
+    string/lower-case))
+
 (defn calc-diffperc
   "Calculate the percentage difference of words between two files.
   
@@ -29,4 +61,11 @@
       (r :error (str "Test file '" test-file-path "' not found"))
 
       :else
-      (r :success (str base-file ", " test-file)))))
+      (let [base-file-txt (slurp base-file-path)
+            comparable-base-file (make-compare-friendly base-file-txt)
+            test-file-txt (slurp test-file-path)
+            comparable-test-file (make-compare-friendly test-file-txt)]
+        (println "BASE FILE:")
+        (println comparable-base-file)
+        (println "TEST FILE:")
+        (println comparable-test-file)))))

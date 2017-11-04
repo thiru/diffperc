@@ -20,7 +20,7 @@
   "A vector of CLI options. Each item follows the spec of a CLI option as
   defined by `clojure.tools.cli`."
   [["-l" "--log-level LEVEL" "Log verbosity level"
-    :default (:log-level-default app-config)
+    :default (:log-level app-config)
     :parse-fn #(Integer/parseInt %)]
    ["-v" "--version" "Show app version"]
    ["-h" "--help" "Show help"]])
