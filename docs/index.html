@@ -3055,6 +3055,7 @@ summary string returned</li>
   (:require [diffperc.app :refer :all]
             [diffperc.utils :refer :all]
             [clojure.java.io :as io]
+            [clojure.java.shell :as shell]
             [clojure.string :as string]))</pre></td></tr><tr><td class="docs"><p>TODO: docs</p>
 </td><td class="codes"><pre class="brush: clojure">(defn strip-subtitle-markup
   [text]
@@ -3079,7 +3080,13 @@ summary string returned</li>
     strip-punctuation
     one-word-per-line
     string/trim
-    string/lower-case))</pre></td></tr><tr><td class="docs"><p>Calculate the percentage difference of words between two files.</p>
+    string/lower-case))</pre></td></tr><tr><td class="docs"><p>TODO: docs</p>
+</td><td class="codes"><pre class="brush: clojure">(defn diff-files
+  [file1 file2]
+  (let [diff (:out (shell/sh &quot;diff&quot; file1 file2))
+        diff-lines (string/split diff #&quot;\n&quot;)]
+    (log :debug diff)
+    diff-lines))</pre></td></tr><tr><td class="docs"><p>Calculate the percentage difference of words between two files.</p>
 
 <p>  Punctuation, white-space, and letter casing is ignored.</p>
 
@@ -3106,8 +3113,12 @@ performed</li></ul></li>
             comparable-test-file (make-compare-friendly test-file-txt)]
         (log :debug &quot;BASE FILE:&quot;)
         (log :debug comparable-base-file)
+        (spit (str base-file-path &quot;--split&quot;) comparable-base-file)
         (log :debug &quot;TEST FILE:&quot;)
-        (log :debug comparable-test-file)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#diffperc.app" name="diffperc.app"><h1 class="project-name">diffperc.app</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Summary</h2>
+        (log :debug comparable-test-file)
+        (spit (str test-file-path &quot;--split&quot;) comparable-test-file)
+        (diff-files (str base-file-path &quot;--split&quot;)
+                    (str test-file-path &quot;--split&quot;))))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#diffperc.app" name="diffperc.app"><h1 class="project-name">diffperc.app</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Summary</h2>
 
 <p>High-level properties of the project, used in places like the CLI, web
 server defaults, build definition, etc.</p>

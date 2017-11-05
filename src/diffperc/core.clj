@@ -6,6 +6,7 @@
   (:require [diffperc.app :refer :all]
             [diffperc.utils :refer :all]
             [clojure.java.io :as io]
+            [clojure.java.shell :as shell]
             [clojure.string :as string]))
 
 (defn strip-subtitle-markup
@@ -40,6 +41,14 @@
     string/trim
     string/lower-case))
 
+(defn diff-files
+  "TODO: docs"
+  [file1 file2]
+  (let [diff (:out (shell/sh "diff" file1 file2))
+        diff-lines (string/split diff #"\n")]
+    (log :debug diff)
+    diff-lines))
+
 (defn calc-diff-perc
   "Calculate the percentage difference of words between two files.
   
@@ -67,5 +76,9 @@
             comparable-test-file (make-compare-friendly test-file-txt)]
         (log :debug "BASE FILE:")
         (log :debug comparable-base-file)
+        (spit (str base-file-path "--split") comparable-base-file)
         (log :debug "TEST FILE:")
-        (log :debug comparable-test-file)))))
+        (log :debug comparable-test-file)
+        (spit (str test-file-path "--split") comparable-test-file)
+        (diff-files (str base-file-path "--split")
+                    (str test-file-path "--split"))))))
