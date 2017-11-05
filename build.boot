@@ -20,14 +20,14 @@
 ;; High-level project metadata has been factored out into it's own namespace,
 ;; `diffperc.app` so it can be referred to from multiple namespaces.
 ;;
-(require 'diffperc.app)
+(require '[diffperc.app :refer :all])
 
 ;; Define project metadata, etc.
 ;;
 (task-options!
   pom {:project 'diffperc
-       :version (:version diffperc.app/app-info)
-       :description (:description diffperc.app/app-info)}
+       :version (:version app-info)
+       :description (:description app-info)}
   aot {:namespace '#{diffperc.main}}
   jar {:main 'diffperc.main}
   sift {:include #{#"\.jar$"}})
@@ -35,9 +35,9 @@
 ;; Require main project namespaces so they're immediately available when
 ;; running the REPL.
 ;;
-(require 'diffperc.main
-         'diffperc.utils
-         'diffperc.core
+(require '[diffperc.main :as main]
+         '[diffperc.utils :refer :all]
+         '[diffperc.core :refer :all]
          '[clojure.java.shell :as shell])
 
 (deftask docs
@@ -55,8 +55,8 @@
                 :main ^:skip-aot diffperc.main
                 :target-path \"target/%%s\"
                 :profiles {:uberjar {:aot :all}})\n"
-                (:version diffperc.app/app-info)
-                (:description diffperc.app/app-info)
+                (:version app-info)
+                (:description app-info)
                 deps))
   (let [cmd "lein marg --file index.html"]
    (println "Running" cmd "...")
@@ -67,7 +67,7 @@
   []
   (comp
     (with-pass-thru _
-      (diffperc.main/-main "run"))))
+      (main/-main "run"))))
 
 (deftask build
   "Build a stand-alone jar."

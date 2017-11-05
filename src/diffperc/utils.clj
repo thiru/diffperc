@@ -23,7 +23,7 @@
   [version]
   (string/replace version #"(\.0+)+$" ""))
 
-;; ## Result Utils
+;; ## Reporting
 
 (def levels
   "A generic map of levels that can be used for logging, reporting, etc.
@@ -36,6 +36,11 @@
    :warning -1
    :error -2
    :fatal -3})
+
+(defn level-names
+  "A comma-delimited string of `level` names."
+  []
+  (string/join ", " (map name (keys levels))))
 
 (defn r
   "A map representing the result of some operation, including the level of
@@ -77,3 +82,18 @@
   TODO: more docs"
   [obj]
   (not (success? obj)))
+
+;; ## Logging
+
+(def log-level
+  "The current logging level (most verbose by default)."
+  :debug)
+
+(defn log
+  "Log to console.
+  
+  TODO: more docs"
+  [level msg]
+  (if (or (= :debug log-level)
+          (<= (get levels level) (get levels log-level)))
+    (println msg)))

@@ -40,7 +40,7 @@
     string/trim
     string/lower-case))
 
-(defn calc-diffperc
+(defn calc-diff-perc
   "Calculate the percentage difference of words between two files.
   
   Punctuation, white-space, and letter casing is ignored.
@@ -65,7 +65,7 @@
             comparable-base-file (make-compare-friendly base-file-txt)
             test-file-txt (slurp test-file-path)
             comparable-test-file (make-compare-friendly test-file-txt)]
-        (println "BASE FILE:")
-        (println comparable-base-file)
-        (println "TEST FILE:")
-        (println comparable-test-file)))))
+        (log :debug "BASE FILE:")
+        (log :debug comparable-base-file)
+        (log :debug "TEST FILE:")
+        (log :debug comparable-test-file)))))

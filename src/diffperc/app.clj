@@ -16,5 +16,10 @@
                      "between two text files. Punctuation is ignored.")})
 
 (def app-config
-  "App configuration and defaults."
-   {:log-level 0})
+  "App configuration and defaults.
+
+  We log at the most verbose level by default. This isn't good for production,
+  but it makes it easy for development (where we typically want the most
+  verbose logging, and we can easily rebind in production mode when `-main`
+  runs (i.e. via `with-redefs`)."
+  {:log-level :debug})

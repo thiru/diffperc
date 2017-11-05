@@ -19,9 +19,13 @@
 (def cli-options
   "A vector of CLI options. Each item follows the spec of a CLI option as
   defined by `clojure.tools.cli`."
-  [["-l" "--log-level LEVEL" "Log verbosity level"
-    :default (:log-level app-config)
-    :parse-fn #(Integer/parseInt %)]
+  [["-l" "--log-level LEVEL"
+    (str "Log verbosity level (" (level-names) ")")
+    :default :error
+    :default-desc "error"
+    :parse-fn #(first (find levels (keyword %)))
+    :validate [#(get levels %)
+               (str "Log verbosity level must be one of: " (level-names))]]
    ["-v" "--version" "Show app version"]
    ["-h" "--help" "Show help"]])
 
@@ -112,9 +116,10 @@
     * A vector of command-line arguments"
   [& args]
   (let [{:keys [files options message ok?]} (validate-args args)]
-    (if message
-      (exit (if ok? 0 1) message)
-      (let [res (calc-diffperc (first files) (second files))]
-        (exit (if (success? res) 0 2)
-              (:message res))))))
-      
+    (with-redefs [app-config (assoc app-config :log-level (:log-level options))
+                  log-level (:log-level options)]
+      (if message
+        (exit (if ok? 0 1) message)
+        (let [res (calc-diff-perc (first files) (second files))]
+          (exit (if (success? res) 0 2)
+                (:message res)))))))
