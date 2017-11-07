@@ -3066,7 +3066,7 @@ summary string returned</li>
     (string/replace #&quot;\[.+\]&quot; &quot;&quot;)))</pre></td></tr><tr><td class="docs"><p>TODO: docs</p>
 </td><td class="codes"><pre class="brush: clojure">(defn strip-punctuation
   [text]
-  (string/replace text #&quot;[^\w\d\s]&quot; &quot;&quot;))</pre></td></tr><tr><td class="docs"><p>TODO: docs</p>
+  (string/replace text #&quot;[^\w\d\s]+&quot; &quot; &quot;))</pre></td></tr><tr><td class="docs"><p>TODO: docs</p>
 </td><td class="codes"><pre class="brush: clojure">(defn one-word-per-line
   [text]
   (-&gt;
@@ -3080,13 +3080,37 @@ summary string returned</li>
     strip-punctuation
     one-word-per-line
     string/trim
-    string/lower-case))</pre></td></tr><tr><td class="docs"><p>TODO: docs</p>
+    string/lower-case))</pre></td></tr><tr><td class="docs"><p>Returns a percentage indicating the accuracy of <code>test-file</code> against
+  <code>base-file</code>.</p>
+
+<p>  TODO: more docs</p>
 </td><td class="codes"><pre class="brush: clojure">(defn diff-files
-  [file1 file2]
-  (let [diff (:out (shell/sh &quot;diff&quot; file1 file2))
-        diff-lines (string/split diff #&quot;\n&quot;)]
-    (log :debug diff)
-    diff-lines))</pre></td></tr><tr><td class="docs"><p>Calculate the percentage difference of words between two files.</p>
+  [base-file test-file]
+  (let [num-base-file-words (count (string/split (slurp base-file) #&quot;\n&quot;))
+        diff (:out (shell/sh &quot;diff&quot; base-file test-file))
+        diff-lines (string/split diff #&quot;\n&quot;)
+        only-in-base-file (re-seq #&quot;(^|\n)&lt; .+&quot; diff)
+        only-in-test-file (re-seq #&quot;(^|\n)&gt; .+&quot; diff)
+        only-in-base-file-count (count only-in-base-file)
+        only-in-test-file-count (count only-in-test-file)
+        accuracy (- 1 (float (/ only-in-base-file-count num-base-file-words)))]
+    (log :debug (str &quot;DIFF LINES: &quot; diff-lines))
+    (log :debug (str &quot;INCORRECT WORDS: &quot; only-in-test-file))
+    (log :info (str &quot;NUM BASE FILE WORDS: &quot; num-base-file-words))
+    (log :info (str &quot;Counted &quot; (count diff-lines) &quot; lines in diff output&quot;))
+    (log :info
+         (str &quot;NUM WORDS ONLY IN BASE (LEFT) FILE: &quot; only-in-base-file-count))
+    (log :info
+         (str &quot;NUM WORDS ONLY IN TEST (RIGHT) FILE: &quot; only-in-test-file-count))
+    (r :success
+       (format &quot;%.0f%%&quot; (* 100 accuracy))
+       {:base-file-words num-base-file-words
+        :missing-words only-in-base-file-count
+        :wrong-words only-in-test-file-count
+        :accuracy accuracy})))</pre></td></tr><tr><td class="docs"><p>Calculate the percentage difference of words between two files.</p>
+
+<p>  Returns a map describing various descrepancy measures between the base and
+  test files.</p>
 
 <p>  Punctuation, white-space, and letter casing is ignored.</p>
 
@@ -3109,16 +3133,19 @@ performed</li></ul></li>
       :else
       (let [base-file-txt (slurp base-file-path)
             comparable-base-file (make-compare-friendly base-file-txt)
+            base-file-out-path (str base-file-path &quot;--split&quot;)
             test-file-txt (slurp test-file-path)
-            comparable-test-file (make-compare-friendly test-file-txt)]
-        (log :debug &quot;BASE FILE:&quot;)
-        (log :debug comparable-base-file)
-        (spit (str base-file-path &quot;--split&quot;) comparable-base-file)
-        (log :debug &quot;TEST FILE:&quot;)
-        (log :debug comparable-test-file)
-        (spit (str test-file-path &quot;--split&quot;) comparable-test-file)
-        (diff-files (str base-file-path &quot;--split&quot;)
-                    (str test-file-path &quot;--split&quot;))))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#diffperc.app" name="diffperc.app"><h1 class="project-name">diffperc.app</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Summary</h2>
+            comparable-test-file (make-compare-friendly test-file-txt)
+            test-file-out-path (str test-file-path &quot;--split&quot;)]
+        #_(log :debug (str &quot;BASE FILE:\n&quot; comparable-base-file))
+        (log :info
+             (str &quot;Counted &quot; (count base-file-txt) &quot; characters in BASE file&quot;))
+        (spit base-file-out-path comparable-base-file)
+        #_(log :debug (str &quot;TEST FILE:\n&quot; comparable-test-file))
+        (log :info
+             (str &quot;Counted &quot; (count test-file-txt) &quot; characters in TEST file&quot;))
+        (spit test-file-out-path comparable-test-file)
+        (diff-files base-file-out-path test-file-out-path)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#diffperc.app" name="diffperc.app"><h1 class="project-name">diffperc.app</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Summary</h2>
 
 <p>High-level properties of the project, used in places like the CLI, web
 server defaults, build definition, etc.</p>
