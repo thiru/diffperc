@@ -37,7 +37,7 @@
 ;;
 (require '[diffperc.main :as main]
          '[diffperc.utils :refer :all]
-         '[diffperc.core :refer :all]
+         '[diffperc.core :refer [calc-diff-perc]]
          '[clojure.java.shell :as shell])
 
 (deftask docs
@@ -63,7 +63,7 @@
    (shell/sh "sh" "-c" cmd)))
 
 (deftask run
-  "Start the web server with default settings."
+  "Start the app with default settings."
   []
   (comp
     (with-pass-thru _
