@@ -14,9 +14,9 @@
   [text]
   (->
     ;; Remove speaker marker (e.g. "M:")
-    (string/replace text #"(^|\n\s*)[\w\d]+:\s+" "")
+    (string/replace text #"(^|\n\s*)[\w\d]+:\s+" " ")
     ;; Remove enviromental queues (e.g. "[laughter]")
-    (string/replace #"\[.+\]" "")))
+    (string/replace #"\[.+\]" " ")))
 
 (defn strip-punctuation
   "Strip all punctuation."
