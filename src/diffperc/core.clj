@@ -19,9 +19,11 @@
     (string/replace #"\[.+\]" "")))
 
 (defn strip-punctuation
-  "TODO: docs"
+  "Strip all punctuation."
   [text]
-  (string/replace text #"[^\w\d\s]+" " "))
+  (->
+    (string/replace text #"['’]" "")
+    (string/replace #"[^\w\d\s']+" " ")))
 
 (defn one-word-per-line
   "TODO: docs"
