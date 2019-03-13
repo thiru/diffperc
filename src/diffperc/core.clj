@@ -3,11 +3,17 @@
 ;; Core domain logic.
 ;;
 (ns diffperc.core
-  (:require [diffperc.app :refer :all]
-            [diffperc.utils :refer :all]
+  (:require
             [clojure.java.io :as io]
             [clojure.java.shell :as shell]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+
+            [taoensso.timbre :as timbre :refer [log spy]]
+
+            [glu.core :refer :all]
+            [glu.results :refer :all]
+
+            [diffperc.app :refer :all]))
 
 (defn strip-subtitle-markup
   "TODO: docs"
@@ -46,7 +52,7 @@
 (defn diff-files
   "Returns a percentage indicating the accuracy of `test-file` against
   `base-file`.
-  
+
   TODO: more docs"
   [base-file test-file]
   (let [num-base-file-words (count (string/split (slurp base-file) #"\n"))
@@ -67,20 +73,21 @@
          (str "NUM WORDS ONLY IN TEST (RIGHT) FILE: " only-in-test-file-count))
     (r :success
        (format "%.0f%%" (* 100 accuracy))
+       :data
        {:base-file-words num-base-file-words
         :missing-words only-in-base-file-count
         :wrong-words only-in-test-file-count
         :accuracy accuracy})))
-        
+
 
 (defn calc-diff-perc
   "Calculate the percentage difference of words between two files.
 
   Returns a map describing various descrepancy measures between the base and
   test files.
-  
+
   Punctuation, white-space, and letter casing is ignored.
-  
+
   * `base-file-path`
     * The file considered to be the base/standard against which the test is
       performed

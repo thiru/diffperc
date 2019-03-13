@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Launches the diffperc app the REPL.
+
+clojure -m diffperc.main "$@"

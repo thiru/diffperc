@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Clean all generated code.
+
+rm -rf .cpcache
+rm -rf out

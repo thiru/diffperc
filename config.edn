@@ -1,0 +1,20 @@
+{:name "diffperc"
+ :version "0.1"
+ :description "Calculates the percentage difference of words between two text files, ignoring punctuation."
+
+ ;; ## Logging
+
+ :logging
+ #merge
+ [{:level :debug
+   :timestamp-opts {:pattern "yyyy-MM-dd hh:mm:ss a"
+                    :timezone :jvm-default}}
+  #profile
+  {:development
+   {:level :debug}
+   :production
+   {:level :info}}]
+
+ ;; ## Servers
+
+ :nrepl-port 9023}

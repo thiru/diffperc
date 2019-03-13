@@ -1,5 +1,8 @@
+.cpcache
 .nrepl-history
 .nrepl-port
+.rebel_readline_history
+*--split
 project.clj
 samples/
 target/

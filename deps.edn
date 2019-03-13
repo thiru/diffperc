@@ -1,0 +1,43 @@
+{:aliases
+ {;; Start REPL with Rebel Readline
+  :rebel {:main-opts ["-m" "rebel-readline.main"]}
+  ;; Search for new versions of dependencies:
+  :outdated {:extra-deps {olical/depot {:mvn/version "1.2.0"}}
+             :main-opts ["-m" "depot.outdated.main"]}}
+ :paths ["src" "resources"]
+ :deps
+ {
+  ;; Clojure (on Java VM):
+  org.clojure/clojure {:mvn/version "1.10.0"}
+
+  ;; Improved cond, etc. with less nesting:
+  better-cond {:mvn/version "2.0.2"}
+  ;; Date/time library:
+  clojure.java-time {:mvn/version "0.3.2"}
+
+  ;; Config loader:
+  aero {:mvn/version "1.1.3"}
+  ;; Markdown to HTML converter:
+  markdown-clj {:mvn/version "1.0.7"}
+  ;; Logging:
+  com.taoensso/timbre {:mvn/version "4.10.0"}
+  ;; SLF4J interop (Jetty, Hikari) for timbre:
+  com.fzakaria/slf4j-timbre {:mvn/version "0.3.12"}
+  ;; Prettier/more relevant exception printing:
+  io.aviso/pretty {:mvn/version "0.1.36"}
+  ;; ANSI colours for terminal:
+  clansi {:mvn/version "1.0.0"}
+  ;; Clojure *network* REPL server/client:
+  nrepl {:mvn/version "0.5.3"}
+  ;; nREPL middleware for CIDER (used by vim-fireplace):
+  cider/cider-nrepl {:mvn/version "0.20.0"}
+  ;; Command-line interface helper:
+  org.clojure/tools.cli {:mvn/version "0.4.1"}
+  ;; HTTP client/server:
+  http-kit {:mvn/version "2.3.0"}
+  ;; File-system watcher:
+  hawk {:mvn/version "0.2.11"}
+  ;; Namespace change tracker:
+  ns-tracker {:mvn/version "0.3.1"}
+  ;; Nicer REPL (Clojure):
+  com.bhauman/rebel-readline {:mvn/version "0.1.4"}}}

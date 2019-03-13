@@ -1,29 +1,16 @@
 # DiffPerc
 
-FIXME: description
-
-## Installation
-
-Download from http://example.com/FIXME.
+Calculates the percentage difference of words between two text files, ignoring
+punctuation.
 
 ## Usage
 
-FIXME: explanation
+```shell
+$ bin/diffperc base-file test-file
+```
 
-    $ java -jar diffperc-0.1.0.jar [args]
+To start the REPL, run without any arguments:
 
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
+```shell
+$ bin/diffperc
+```
