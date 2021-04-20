@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+
+# Build app using GraalVM
+
+if [ -z "$GRAALVM_HOME" ]; then
+  echo 'Please set GRAALVM_HOME'
+  exit 1
+fi
+
+# Java compiled classes will be placed in this directory:
+mkdir -p classes
+
+# Binary will be placed within this directory:
+mkdir -p target
+
+# Compile Clojure:
+clojure -M -e "(compile 'diffperc.main)"
+
+# Ensure GraalVM native-image program is installed:
+"$GRAALVM_HOME/bin/gu" install native-image
+
+# Build stand-alone binary:
+"$GRAALVM_HOME/bin/native-image" \
+  -cp "$(clojure -Spath):classes" \
+  -H:Name=target/diffperc \
+  -H:+ReportExceptionStackTraces \
+  --initialize-at-build-time \
+  --static \
+  --verbose \
+  --no-fallback \
+  --no-server \
+  "-J-Xmx16g" \
+  diffperc.main
+
+# Explanation of some of the args above:
+
+# --initialize-at-build-time
+# This is needed for Clojure or else there will be strange errors
+
+# --static
+# Don't depend on any system libraries. This flag was originally intended for
+# Alpine docker images and only works on Linux.
+
+# --no-fallback
+# If native compilation fails, without this, it will create a fallback image
+# which is a full JVM to run your program (don't want this typically).
+
+# --no-server
+# Without this GraalVM will start a backgroud server that will be used next
+# time
+
+# "-J-Xmx16g"
+# Limit GraalVM to the specified amount of RAM. More memory results in faster
+# builds but will an error out if you don't have enough RAM.

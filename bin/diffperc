@@ -1,5 +1,0 @@
-#!/bin/bash
-
-# Launches the diffperc app via the clojure CLI.
-
-clojure -m diffperc.main "$@"

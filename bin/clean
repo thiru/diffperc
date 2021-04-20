@@ -1,6 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 
-# Clean all generated code.
+echo "Deleting auto-generated code & output binaries..."
 
-rm -rf .cpcache
-rm -rf out
+rm -f diffperc
+rm -rf .cpcache/
+rm -rf classes/
+rm -rf out/
+rm -rf target/

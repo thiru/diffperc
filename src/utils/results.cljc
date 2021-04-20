@@ -1,10 +1,13 @@
-(ns glu.results
+(ns utils.results
   "General facilities around reporting and validation."
   (:require
             [clojure.spec.alpha :as s]
             [clojure.string :as str]))
 
-;; ## Level --------------------------------------------------------------------
+(set! *warn-on-reflection* true)
+
+;; ## Level
+;; ----------------------------------------------------------------------------
 
 (def levels
   "A generic map of levels that can be used for logging, reporting, etc.
@@ -21,32 +24,8 @@
 
 (s/def ::level #(contains? levels %))
 
-(defn level->log-level
-  "Account for differences between `levels` and Timbre's logging levels.
-
-   * `level`
-     * Expected to be a value from `levels`
-
-   Returns a log level usable by Timbre."
-  [level]
-  (cond
-    (nil? level)
-    :error
-
-    (= :success level)
-    :info
-
-    :else
-    level))
-
-(defn r->ll
-  "Get a Timbre-compatible log level from the given result map."
-  [result]
-  (level->log-level (:level result)))
-
-;; Level =======================================================================
-
-;; ## Simple Result ------------------------------------------------------------
+;; ## Result
+;; ----------------------------------------------------------------------------
 
 ;; Let's allow a message to be any type, since we can usually get a meaningful
 ;; string representation of most objects.
@@ -98,7 +77,9 @@
 ;; We'll just use a simple function to determine success in ClojureScript, as
 ;; I couldn't get the multi-method implementation working.
 #?(:cljs
-   (defn success? [obj]
+   (defn success?
+     "Determine whether the given object represents a successful outcome."
+     [obj]
      (cond
        (nil? obj)
        false
@@ -157,52 +138,46 @@
   [obj]
   (not (success? obj)))
 
-;; Simple Result ===============================================================
+(defn warned?
+  "Determine whether the given object represents a warning or failure outcome.
 
-;; ## Meta Result --------------------------------------------------------------
-
-(s/fdef mr
-        :args (s/cat :level ::level
-                     :message ::message
-                     :data #(instance? clojure.lang.IMeta %)
-                     :more (s/? map?)))
-
-(defn mr
-  "The name of this function is an acronym for 'meta result'.
-
-  It associates a result map (via `(r)`) to the metadata of `data` under a key
-  named `:result`. Existing metadata on `data` is preserved.
-
-  * `data`
-    * The object with which to associate the metadata
-    * Note that only certain types of objects can have metadata
-      * I.e. only objects that implement `clojure.lang.IMeta`
-
-  Returns `data`.
-
-  Please see `(r)` for documentation on parameters not documented here, and
-  other rationale."
-  ([level message data]
-   (vary-meta data assoc :result (r level message)))
-  ([level message data & {:as rest}]
-   (vary-meta data assoc :result (merge (r level message) rest))))
-
-(defn get-mr
-  "Get the result map attached to `obj` as metadata."
+  This is basically the same as `failed?` except also returns true if `obj`
+  is a result map where `:level` is `:warn`."
   [obj]
-  (if (and obj #(instance? clojure.lang.IMeta obj))
-      (-> obj meta :result)))
+  (or (failed? obj)
+      (= :warn (:level obj))))
 
-(defn msuccess?
-  "Same as `success?` except check the metadata of `obj` for a key named
-  `:result`, passing it's value to `success?`."
-  [obj]
-  (success? (:result (meta obj))))
+(defn parse-sh
+  "Parse the given shell command (i.e. `clojure.java.shell/sh`).
 
-(defn mfailed?
-  "Same as `failed?` except check the metadata of `obj` for a key named
-  `:result`, passing it's value to `failed?`."
-  [obj]
-  (failed? (:result (meta obj))))
+   * `cmd-res`
+     * The returned (map) from `clojure.java.shell/sh`
+   * `throw?`
+     * Whether to throw an exception if the command failed
 
-;; Meta Result =================================================================
+   Return:
+   * throws an exception if `cmd-res` in `nil`
+   * when `throw?` is truthy
+     * a result map with the following additional keys:
+       * `:exit`
+         * The exit code of the command
+     * throws an `ExceptionInfo`
+       * with concatenated standard out and error from the command in the
+         message
+       * The map contains the exit code of the command in `:exit`"
+  [cmd-res & {:keys [throw?]}]
+  (if (nil? cmd-res)
+    (throw (ex-info "No command output given" {}))
+    (let [exit-code (:exit cmd-res)
+          msg (str (:out cmd-res)
+                   (if (empty? (:err cmd-res))
+                     ""
+                     (str " " (:err cmd-res))))]
+      (if (and throw? (not= 0 exit-code))
+        (throw (ex-info msg {:exit exit-code}))
+        (r (if (= 0 exit-code)
+             :success
+             :error)
+           msg
+           :exit exit-code)))))
+

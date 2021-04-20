@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Run app using regular Clojure
+
+clojure -M -m diffperc.main "$@"
+

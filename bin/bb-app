@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Run app using Babashka
+
+cd $(dirname $0)/..
+
+bb -cp $(clojure -Spath) -m diffperc.main -- "$@"
+

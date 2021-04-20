@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo "Starting dev-oriented REPL..."
+
+clojure -M:dev "$@"
+
