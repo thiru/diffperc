@@ -1,7 +1,6 @@
 (ns utils.results
   "General facilities around reporting and validation."
-  (:require
-            [clojure.spec.alpha :as s]
+  (:require ;; Clojure Core:
             [clojure.string :as str]))
 
 (set! *warn-on-reflection* true)
@@ -22,23 +21,8 @@
    :error -1
    :fatal -2})
 
-(s/def ::level #(contains? levels %))
-
 ;; ## Result
 ;; ----------------------------------------------------------------------------
-
-;; Let's allow a message to be any type, since we can usually get a meaningful
-;; string representation of most objects.
-(s/def ::message any?)
-
-(s/def ::result
-  (s/keys :req-un [::level ::message]))
-
-(s/fdef r
-        :args (s/cat :level ::level
-                     :message (s/? ::message)
-                     :more (s/? map?))
-        :ret ::result)
 
 (defn result?
   "Check if the given object is a valid result map."
@@ -88,7 +72,7 @@
        false
 
        (= PersistentArrayMap (type obj))
-       (if (s/valid? ::result obj)
+       (if (result? obj)
          (<= 0 (get levels (:level obj) (:error levels)))
          true)
 
@@ -123,7 +107,7 @@
 
 #?(:clj
    (defmethod success? clojure.lang.PersistentArrayMap map-type [maybe-r]
-     (if (s/valid? ::result maybe-r)
+     (if (result? maybe-r)
        (<= 0 (get levels (:level maybe-r) (:error levels)))
        true)))
 
