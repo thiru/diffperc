@@ -3,6 +3,11 @@
 Calculates the percentage difference of words between two text files, ignoring
 punctuation.
 
+## Requirements
+
+* Linux
+* `diff` command (should be in all Linux distros)
+
 ## Usage
 
 The easiest way to run it is to download the binary under Releases:
